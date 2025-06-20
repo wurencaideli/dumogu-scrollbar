@@ -1,0 +1,49 @@
+{
+    "name": "dumogu-scrollbar",
+    "version": "0.0.2",
+    "description": "A simple custom scrollbar plugin",
+    "author": "wuzhanggui",
+    "license": "MIT",
+    "type": "module",
+    "keywords": [
+        "frontend",
+        "滚动条",
+        "自定义滚动条",
+        "scroll",
+        "scrollbar"
+    ],
+    "homepage": "https://github.com/wurencaideli/dumogu-scrollbar",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wurencaideli/dumogu-scrollbar"
+    },
+    "bugs": {
+        "url": "https://github.com/wurencaideli/dumogu-scrollbar/issues"
+    },
+    "jspm": {
+        "main": "dist/dumogu-scrollbar.cjs.js",
+        "registry": "jspm"
+    },
+    "main": "dist/dumogu-scrollbar.cjs.js",
+    "module": "dist/dumogu-scrollbar.esm.js",
+    "style": "dist/dumogu-scrollbar.css",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "rollup -c",
+        "build-sass": "node ./build-sass.js"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^28.0.6",
+        "@rollup/plugin-node-resolve": "^16.0.1",
+        "@rollup/plugin-terser": "^0.4.4",
+        "autoprefixer": "^10.4.21",
+        "clean-css": "^5.3.3",
+        "postcss": "^8.5.6",
+        "postcss-preset-env": "^10.2.3",
+        "rollup": "^3.29.5",
+        "sass": "^1.89.2"
+    }
+}

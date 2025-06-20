@@ -1,0 +1,68 @@
+.dumogu-scrollbar {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 999;
+    > .dumogu-scrollbar-target {
+        position: absolute;
+        width: 0;
+        height: 0;
+    }
+}
+.dumogu-scrollbar-target-rail {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: initial;
+    &.x {
+        bottom: 0;
+        left: 0;
+        height: 8px;
+        width: 100%;
+    }
+    &.y {
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 8px;
+    }
+    &.hidden {
+        display: none;
+    }
+    &.hover {
+        opacity: 1;
+    }
+    &.target-hover {
+        opacity: 1;
+    }
+    &.keep-show {
+        opacity: 1;
+    }
+    &.dragging {
+        opacity: 1;
+    }
+    &:hover {
+        opacity: 1;
+    }
+    > .dumogu-scrollbar-target-rail-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        > .dumogu-scrollbar-target-thumb {
+            position: absolute;
+            background-color: #007fff;
+            user-select: none;
+            border-radius: 2px;
+            &.x {
+                height: 100%;
+            }
+            &.y {
+                width: 100%;
+            }
+        }
+    }
+}
