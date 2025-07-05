@@ -15,7 +15,8 @@ export class Scrollbar extends BaseTools {
         this.scrollbarEl.classList.add('dumogu-scrollbar');
         this.scrollbarTargetEl.classList.add('dumogu-scrollbar-target');
     }
-    updateStyle(params) {
+    /** 计算位置 */
+    computedPosition(params) {
         if (!this.isMounted || this.isDestroyed) return;
         const targetEl = this.targetEl;
         const scrollbarTargetEl = this.scrollbarTargetEl;

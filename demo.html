@@ -1,0 +1,191 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <title>dumogu-scrollbar demo</title>
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1"
+        />
+        <link rel="stylesheet" href="./dist/dumogu-scrollbar.css" />
+        <script src="./dist/dumogu-scrollbar.umd.js"></script>
+        <style>
+            body {
+                font-size: 12px;
+                margin: 0;
+                padding: 0;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+            }
+            .dumogu-scrollbar-demo {
+                width: 100vw;
+                height: 100vh;
+                overflow: auto;
+            }
+            .dumogu-scrollbar-demo > .container {
+                padding: 15px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .container > * {
+                margin: 0 0 15px 0;
+            }
+            .ds-1 {
+                width: 500px;
+                height: 300px;
+                overflow: auto;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+            }
+            .ds-2 {
+                width: 500px;
+                height: 300px;
+                overflow: auto;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+            }
+            .ds-3 {
+                width: 500px;
+                height: 300px;
+                overflow: auto;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+            }
+            .ds-4 {
+                width: 500px;
+                height: 300px;
+                overflow: auto;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+                border: 3px solid;
+            }
+            .defin-css .dumogu-scrollbar-target-rail.x {
+                height: 10px;
+                padding: 1px;
+                background: rgba(0, 0, 255, 0.1);
+                box-sizing: border-box;
+                border-radius: 999px;
+                box-shadow: inset 1px 1px 2px #0000001c;
+                bottom: 6px;
+                width: calc(100% - 12px);
+                left: 6px;
+            }
+            .defin-css .dumogu-scrollbar-target-thumb.x {
+                border-radius: 999px;
+                background: #ffffff;
+                box-shadow: 0 0 2px #000000;
+            }
+            .defin-css .dumogu-scrollbar-target-rail.y {
+                width: 8px;
+                right: -12px;
+            }
+            .defin-css .dumogu-scrollbar-target-thumb.y {
+                border-radius: 999px;
+                background: #987;
+                background-image: linear-gradient(
+                    -131deg,
+                    rgb(231, 176, 43) 0%,
+                    rgb(193, 62, 81) 100%
+                );
+            }
+        </style>
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                const { DumoguScrollbar } = window['dumogu-scrollbar'];
+                const dsInstanceList = [];
+                dsInstanceList.push(
+                    new DumoguScrollbar(document.querySelector('#dumogu-scrollbar-demo'), {
+                        keepShow: false,
+                        stopClickPropagation: true,
+                    }),
+                );
+                dsInstanceList.push(
+                    new DumoguScrollbar(document.querySelector('#ds-2'), {
+                        keepShow: true,
+                        stopClickPropagation: true,
+                    }),
+                );
+                dsInstanceList.push(
+                    new DumoguScrollbar(document.querySelector('#ds-3'), {
+                        keepShow: false,
+                        stopClickPropagation: true,
+                    }),
+                );
+                dsInstanceList.push(
+                    new DumoguScrollbar(document.querySelector('#ds-4'), {
+                        keepShow: true,
+                        stopClickPropagation: true,
+                    }),
+                );
+                /** 每一帧更新滚动条位置 */
+                function update() {
+                    requestAnimationFrame(() => {
+                        dsInstanceList.forEach((item) => {
+                            item.update();
+                        });
+                        update();
+                    });
+                }
+                update();
+                dsInstanceList[3].scrollbar.scrollbarEl.classList.add('defin-css');
+            });
+        </script>
+    </head>
+
+    <body>
+        <div id="dumogu-scrollbar-demo" class="dumogu-scrollbar-demo no-scrollbar">
+            <div class="container">
+                <h1 class="title">dumogu-scrollbar demo</h1>
+                <h2 class="title">自定义滚动条样式</h2>
+                <div>
+                    始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                </div>
+                <div id="ds-4" class="ds ds-4 no-scrollbar">
+                    <h3 style="width: 800px">测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                </div>
+                <h2 class="title">与原生并不冲突</h2>
+                <div id="ds-2" class="ds ds-2">
+                    <h3 style="width: 800px">滚动条有最小长度限制，与原生滚动条一致。</h3>
+                    <h3 style="height: 100000px">此元素高度100000px</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                </div>
+                <h2 class="title">hover的时候显示滚动条</h2>
+                <div id="ds-3" class="ds ds-3 no-scrollbar">
+                    <h3 style="width: 800px">测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

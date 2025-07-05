@@ -13,11 +13,8 @@ export class DumoguScrollbar extends BaseTools {
     isHover = false;
     handleMouseEnter_;
     handleMouseLeave_;
-    handleTransitionEnd_;
-    isAutoUnmount = false;
     constructor(targetEl, option = {}) {
         super();
-        this.isAutoUnmount = option.isAutoUnmount;
         this.targetEl = targetEl;
         this.scrollbar = new Scrollbar(targetEl);
         this.railX = new Rail(targetEl, {
@@ -35,6 +32,20 @@ export class DumoguScrollbar extends BaseTools {
         scrollbarTargetEl.appendChild(this.railX.railEl);
         scrollbarTargetEl.appendChild(this.railY.railEl);
         scrollbarEl.appendChild(scrollbarTargetEl);
+        this.addEventListener();
+        this.mount();
+        this.update();
+    }
+    handleMouseEnter() {
+        this.isHover = true;
+        this.update();
+    }
+    handleMouseLeave() {
+        this.isHover = false;
+        this.update();
+    }
+    addEventListener() {
+        const targetEl = this.targetEl;
         const that = this;
         this.handleMouseEnter_ = function () {
             that.handleMouseEnter();
@@ -42,39 +53,21 @@ export class DumoguScrollbar extends BaseTools {
         this.handleMouseLeave_ = function () {
             that.handleMouseLeave();
         };
-        this.handleMouseLeave_ = function () {
-            that.handleMouseLeave();
-        };
-        this.handleTransitionEnd_ = function () {
-            that.handleTransitionEnd();
-        };
         targetEl.addEventListener('mouseenter', this.handleMouseEnter_);
         targetEl.addEventListener('mouseleave', this.handleMouseLeave_);
-        this.railX.railEl.addEventListener('transitionend', this.handleTransitionEnd_);
-        this.railY.railEl.addEventListener('transitionend', this.handleTransitionEnd_);
-        this.mount();
-        this.updateStyle();
     }
-    handleMouseEnter() {
-        this.isHover = true;
-        this.autoUnmount();
-        this.updateStyle();
+    removeEventListener() {
+        this.targetEl.removeEventListener('mouseenter', this.handleMouseEnter);
+        this.targetEl.removeEventListener('mouseleave', this.handleMouseLeave);
     }
-    handleMouseLeave() {
-        this.isHover = false;
-        this.updateStyle();
-    }
-    handleTransitionEnd() {
-        this.autoUnmount();
-    }
-    updateStyle() {
-        if (!this.isMounted || this.isDestroyed) return;
+    update() {
+        if (this.isDestroyed) return;
         const targetElRect = this.targetEl.getBoundingClientRect();
-        this.scrollbar.updateStyle({
+        this.scrollbar.computedPosition({
             targetElRect: targetElRect,
         });
-        this.railX.updateStyle({ targetElRect: targetElRect });
-        this.railY.updateStyle({ targetElRect: targetElRect });
+        this.railX.computedProportion();
+        this.railY.computedProportion();
         if (this.isHover) {
             this.railX.railEl.classList.add('target-hover');
             this.railY.railEl.classList.add('target-hover');
@@ -91,40 +84,12 @@ export class DumoguScrollbar extends BaseTools {
         removeElement(this.scrollbar.scrollbarEl);
         this.isMounted = false;
     }
-    autoUnmount() {
-        if (!this.isAutoUnmount) return;
-        if (this.isDestroyed) return;
-        let xMount = true;
-        let yMount = true;
-        if (
-            !this.isHover &&
-            !this.railX.isTransitioning &&
-            !this.railX.isDragging &&
-            !this.railX.isHover
-        ) {
-            xMount = false;
-        }
-        if (
-            !this.isHover &&
-            !this.railY.isTransitioning &&
-            !this.railY.isDragging &&
-            !this.railY.isHover
-        ) {
-            yMount = false;
-        }
-        if (!xMount && !yMount) {
-            this.unmount();
-        } else {
-            this.mount();
-        }
-    }
     destroy() {
         this.unmount();
         this.scrollbar.destroy();
         this.railX.destroy();
         this.railY.destroy();
-        this.targetEl.removeEventListener('mouseenter', this.handleMouseEnter);
-        this.targetEl.removeEventListener('mouseleave', this.handleMouseLeave);
+        this.removeEventListener();
         this.targetEl = undefined;
         this.scrollbar = undefined;
         this.railX = undefined;
