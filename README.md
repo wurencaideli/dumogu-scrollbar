@@ -6,6 +6,8 @@ There is no repeated packaging of the scroll container. This custom scroll bar i
 
 You can even directly introduce the rail component to define the mounting target yourself and define the style of the scroll bar more flexibly.
 
+[DEMO](https://wurencaideli.github.io/dumogu-scrollbar/demo.html)
+
 #### install
 
 ```javascript
@@ -19,7 +21,6 @@ import {DumoguScrollbar} form 'dumogu-scrollbar';
 
 const el = document.getElementById('target');
 const dumoguScrollbar = new DumoguScrollbar(el,{
-    isAutoUnmount:true,  // Whether it automatically mounts and unmounts
     keepShow:false,  // Whether to always display
     stopClickPropagation:false  // Cancel the bubble of the click event
 });
@@ -27,7 +28,7 @@ const dumoguScrollbar = new DumoguScrollbar(el,{
 /** The following are some methods in the examples */
 
 // Update the style
-dumoguScrollbar.updateStyle();
+dumoguScrollbar.update();
 // Mount
 dumoguScrollbar.mount()
 // Unmount
