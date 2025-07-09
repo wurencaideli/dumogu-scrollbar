@@ -1,10 +1,11 @@
+/** 从文档上清除一个元素 */
 export function removeElement(element) {
     if (element && element.parentNode) {
         element.parentNode.removeChild(element);
     }
 }
 export class BaseTools {
-    isMounted = true;
+    isMounted = false;
     isDestroyed = false;
     constructor() {}
     destroy() {

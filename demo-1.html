@@ -1,0 +1,136 @@
+<!DOCTYPE >
+<html>
+    <head>
+        <title>dumogu-scrollbar demo</title>
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1"
+        />
+        <link rel="stylesheet" href="./dist/dumogu-scrollbar.css" />
+        <script src="./dist/dumogu-scrollbar.umd.js"></script>
+        <style>
+            body {
+                font-size: 12px;
+                margin: 0;
+                padding: 0;
+            }
+            /* 隐藏滚动条 */
+            html,
+            body {
+                scrollbar-width: none; /* Firefox */
+            }
+            body::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Edge */
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .dumogu-scrollbar-demo {
+                width: 100%;
+            }
+            .dumogu-scrollbar-demo > .container {
+                padding: 15px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .container > * {
+                margin: 0 0 15px 0;
+            }
+            .defin-css .dumogu-scrollbar-target-rail.x {
+                height: 10px;
+                padding: 1px;
+                background: rgba(0, 0, 255, 0.1);
+                box-sizing: border-box;
+                border-radius: 999px;
+                box-shadow: inset 1px 1px 2px #0000001c;
+                bottom: 6px !important;
+                width: calc(100% - 6px - 6px);
+                left: 6px !important;
+            }
+            .defin-css .dumogu-scrollbar-target-thumb.x {
+                border-radius: 999px;
+                background: #ffffff;
+                box-shadow: 0 0 2px #000000;
+            }
+            .defin-css .dumogu-scrollbar-target-rail.y {
+                width: 8px;
+                right: 6px !important;
+                top: 6px !important;
+                height: calc(100% - 6px - 6px);
+            }
+            .defin-css .dumogu-scrollbar-target-thumb.y {
+                border-radius: 999px;
+                background: #987;
+                background-image: linear-gradient(
+                    -131deg,
+                    rgb(231, 176, 43) 0%,
+                    rgb(193, 62, 81) 100%
+                );
+            }
+        </style>
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                const { DumoguScrollbar } = window['dumogu-scrollbar'];
+                const dsInstance = new DumoguScrollbar({
+                    keepShow: true,
+                    stopClickPropagation: true,
+                });
+                dsInstance.scrollbarEl.classList.add('defin-css');
+                dsInstance.bind();
+                dsInstance.mount();
+                window.dsInstance = dsInstance;
+                /** 每一帧更新滚动条位置 */
+                function updateDsInstance() {
+                    requestAnimationFrame(() => {
+                        dsInstance.update();
+                        updateDsInstance();
+                    });
+                }
+                updateDsInstance();
+            });
+        </script>
+    </head>
+
+    <body>
+        <div id="dumogu-scrollbar-demo" class="dumogu-scrollbar-demo">
+            <div class="container">
+                <h1 class="title">dumogu-scrollbar demo</h1>
+                <div>始终显示滚动条，可以定义任意的css样式。</div>
+                <div>
+                    <h3 style="width: 150vw">测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                    <h3>测试</h3>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

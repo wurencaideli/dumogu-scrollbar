@@ -1,22 +1,23 @@
 import { BaseTools } from './common';
-
 /**
  * 滚动条导轨，可自行创建使用
  */
 export class Rail extends BaseTools {
-    isX;
-    keepShow = false;
-    stopClickPropagation = false;
     targetEl;
     railEl;
     railContainerEl;
     thumbEl;
+    targetIsWidow = false;
+    isX__ = true;
+    keepShow__ = false;
+    stopClickPropagation = false;
     isTransitioning = false;
     isDragging__ = false;
     isHover__ = false;
+    isTargetHover__ = false;
+    proportion__ = 0;
     startX = 0;
     startY = 0;
-    proportion__ = 0;
     handleMousedown_;
     handleMouseMove_;
     handleMouseUp_;
@@ -24,12 +25,10 @@ export class Rail extends BaseTools {
     handleScroll_;
     handleMouseEnter_;
     handleMouseLeave_;
-    constructor(targetEl, option) {
+    handleTargetMouseEnter_;
+    handleTargetMouseLeave_;
+    constructor(option) {
         super();
-        this.targetEl = targetEl;
-        this.isX = option.isX;
-        this.keepShow = option.keepShow;
-        this.stopClickPropagation = option.stopClickPropagation;
         this.railEl = document.createElement('div');
         this.railContainerEl = document.createElement('div');
         this.thumbEl = document.createElement('div');
@@ -37,15 +36,33 @@ export class Rail extends BaseTools {
         this.railContainerEl.classList.add('dumogu-scrollbar-target-rail-container');
         this.thumbEl.classList.add('dumogu-scrollbar-target-thumb');
         this.railEl.classList.add('hidden');
-        this.railEl.classList.add(this.isX ? 'x' : 'y');
-        this.railContainerEl.classList.add(this.isX ? 'x' : 'y');
-        this.thumbEl.classList.add(this.isX ? 'x' : 'y');
-        if (this.keepShow) {
-            this.railEl.classList.add('keep-show');
-        }
         this.railEl.appendChild(this.railContainerEl);
         this.railContainerEl.appendChild(this.thumbEl);
+        this.stopClickPropagation = option.stopClickPropagation;
+        this.isX = option.isX;
+        this.keepShow = option.keepShow;
+    }
+    /** 将滚动条与一个元素绑定 */
+    bind(targetEl) {
+        if (this.isDestroyed) return;
+        this.targetEl = targetEl;
+        this.targetIsWidow = !targetEl;
+        this.removeEventListener();
         this.addEventListener();
+    }
+    set isX(value) {
+        this.isX__ = value;
+        this.setupActionClass();
+    }
+    get isX() {
+        return this.isX__;
+    }
+    set keepShow(value) {
+        this.keepShow__ = value;
+        this.setupActionClass();
+    }
+    get keepShow() {
+        return this.keepShow__;
     }
     set isDragging(value) {
         this.isDragging__ = value;
@@ -61,6 +78,13 @@ export class Rail extends BaseTools {
     get isHover() {
         return this.isHover__;
     }
+    set isTargetHover(value) {
+        this.isTargetHover__ = value;
+        this.setupActionClass();
+    }
+    get isTargetHover() {
+        return this.isTargetHover__;
+    }
     set proportion(value) {
         this.proportion__ = value;
         this.setupHidden();
@@ -70,6 +94,7 @@ export class Rail extends BaseTools {
         return this.proportion__;
     }
     setupHidden() {
+        if (this.isDestroyed) return;
         const railEl = this.railEl;
         if (this.proportion >= 1) {
             railEl.classList.add('hidden');
@@ -78,7 +103,15 @@ export class Rail extends BaseTools {
         }
     }
     setupActionClass() {
+        if (this.isDestroyed) return;
         const railEl = this.railEl;
+        const railContainerEl = this.railContainerEl;
+        const thumbEl = this.thumbEl;
+        if (this.keepShow) {
+            railEl.classList.add('keep-show');
+        } else {
+            railEl.classList.remove('keep-show');
+        }
         if (this.isDragging) {
             railEl.classList.add('dragging');
         } else {
@@ -89,44 +122,106 @@ export class Rail extends BaseTools {
         } else {
             railEl.classList.remove('hover');
         }
-    }
-    /** 设置滚动条位置 */
-    setupPosition() {
-        const targetEl = this.targetEl;
-        const railContainerEl = this.railContainerEl;
-        const thumbEl = this.thumbEl;
-        const proportion = Math.min(this.proportion, 1);
-        if (this.isX) {
-            const thumbElLeft = targetEl.scrollLeft / (targetEl.scrollWidth - targetEl.clientWidth);
-            const width = Math.max(railContainerEl.clientWidth * proportion, 30); // 设置最小长度
-            thumbEl.style.width = width + 'px';
-            thumbEl.style.left =
-                (((railContainerEl.clientWidth - width) * thumbElLeft) /
-                    railContainerEl.clientWidth) *
-                    100 +
-                '%';
+        if (this.isTargetHover) {
+            railEl.classList.add('target-hover');
         } else {
-            const thumbElTop = targetEl.scrollTop / (targetEl.scrollHeight - targetEl.clientHeight);
-            const height = Math.max(railContainerEl.clientHeight * proportion, 30); // 设置最小长度
-            thumbEl.style.height = height + 'px';
-            thumbEl.style.top =
-                (((railContainerEl.clientHeight - height) * thumbElTop) /
-                    railContainerEl.clientHeight) *
-                    100 +
-                '%';
+            railEl.classList.remove('target-hover');
+        }
+        if (this.isX) {
+            railEl.classList.remove('y');
+            railContainerEl.classList.remove('y');
+            thumbEl.classList.remove('y');
+            railEl.classList.add('x');
+            railContainerEl.classList.add('x');
+            thumbEl.classList.add('x');
+        } else {
+            railEl.classList.remove('x');
+            railContainerEl.classList.remove('x');
+            thumbEl.classList.remove('x');
+            railEl.classList.add('y');
+            railContainerEl.classList.add('y');
+            thumbEl.classList.add('y');
         }
     }
-    /** 计算位置占比 */
-    computedProportion() {
+    /** 获取目标元素的属性 */
+    getTargetAttributes() {
+        const targetEl = this.targetEl;
+        let clientSize = 0;
+        let scrollSize = 0;
+        let scrollStart = 0;
+        if (this.isX) {
+            clientSize = this.targetIsWidow ? window.innerWidth : targetEl.clientWidth;
+            scrollSize = this.targetIsWidow
+                ? document.documentElement.scrollWidth
+                : targetEl.scrollWidth;
+            scrollStart = this.targetIsWidow ? window.scrollX : targetEl.scrollLeft;
+        } else {
+            clientSize = this.targetIsWidow ? window.innerHeight : targetEl.clientHeight;
+            scrollSize = this.targetIsWidow
+                ? document.documentElement.scrollHeight
+                : targetEl.scrollHeight;
+            scrollStart = this.targetIsWidow ? window.scrollY : targetEl.scrollTop;
+        }
+        return {
+            clientSize,
+            scrollSize,
+            scrollStart,
+        };
+    }
+    /** 设置目标元素滚动位置 */
+    targetScrollTo(start) {
         if (this.isDestroyed) return;
         const targetEl = this.targetEl;
-        let proportion = 0; // 宽度或高度占比
         if (this.isX) {
-            proportion = targetEl.clientWidth / targetEl.scrollWidth;
+            if (this.targetIsWidow) {
+                window.scrollTo(start, window.scrollY);
+            } else {
+                targetEl.scrollLeft = start;
+            }
         } else {
-            proportion = targetEl.clientHeight / targetEl.scrollHeight;
+            if (this.targetIsWidow) {
+                window.scrollTo(window.scrollX, start);
+            } else {
+                targetEl.scrollTop = start;
+            }
         }
-        this.proportion = proportion;
+    }
+    /** 更新样式 */
+    update() {
+        this.computedProportion();
+    }
+    /** 计算比例，滚动比例(采用空白区域的计算方式) */
+    computedProportion() {
+        if (this.isDestroyed) return;
+        const targetAttributes = this.getTargetAttributes();
+        let proportion = 0;
+        let scrollProportion = 0;
+        proportion = targetAttributes.clientSize / targetAttributes.scrollSize;
+        scrollProportion =
+            targetAttributes.scrollStart /
+            (targetAttributes.scrollSize - targetAttributes.clientSize);
+        this.scrollProportion = Math.min(scrollProportion, 1);
+        this.proportion = Math.min(proportion, 1);
+    }
+    /** 设置滚动条显示的位置 */
+    setupPosition() {
+        if (this.isDestroyed) return;
+        const railContainerEl = this.railContainerEl;
+        const thumbEl = this.thumbEl;
+        const proportion = this.proportion;
+        const scrollProportion = this.scrollProportion;
+        const railClientSize = this.isX
+            ? railContainerEl.clientWidth
+            : railContainerEl.clientHeight;
+        const size = Math.max(railClientSize * proportion, 30); // 设置最小size
+        const start = (((railClientSize - size) * scrollProportion) / railClientSize) * 100;
+        if (this.isX) {
+            thumbEl.style.width = size + 'px';
+            thumbEl.style.left = start + '%';
+        } else {
+            thumbEl.style.height = size + 'px';
+            thumbEl.style.top = start + '%';
+        }
     }
     handleMousedown(e) {
         if (this.isDestroyed) return;
@@ -137,70 +232,77 @@ export class Rail extends BaseTools {
     handleMouseMove(e) {
         if (this.isDestroyed) return;
         if (!this.isDragging) return;
-        const targetEl = this.targetEl;
+        const targetAttributes = this.getTargetAttributes();
         const railContainerEl = this.railContainerEl;
         const railContainerElRect = railContainerEl.getBoundingClientRect();
         const thumbEl = this.thumbEl;
-        const targetElRect = targetEl.getBoundingClientRect();
+        let deltaLength = 0;
+        const currentX = e.x;
+        const currentY = e.y;
         if (this.isX) {
-            const currentX = e.x;
-            const deltaX = currentX - this.startX;
+            deltaLength = currentX - this.startX;
             this.startX = currentX;
-            if (targetEl.scrollLeft == 0 && currentX < railContainerElRect.x) return;
-            if (targetEl.scrollLeft + targetElRect.width >= targetEl.scrollWidth) {
+            if (targetAttributes.scrollStart == 0 && currentX < railContainerElRect.x) return;
+            if (
+                targetAttributes.scrollStart + targetAttributes.clientSize >=
+                targetAttributes.scrollSize
+            ) {
                 if (currentX >= railContainerElRect.x + railContainerElRect.width) {
                     return;
                 }
             }
             const width =
-                (deltaX / (railContainerEl.clientWidth - thumbEl.offsetWidth)) *
-                (targetEl.scrollWidth - targetEl.clientWidth);
-            targetEl.scrollLeft = targetEl.scrollLeft + width;
+                (deltaLength / (railContainerEl.clientWidth - thumbEl.offsetWidth)) *
+                (targetAttributes.scrollSize - targetAttributes.clientSize);
+            this.targetScrollTo(targetAttributes.scrollStart + width);
         } else {
-            const currentY = e.y;
-            const deltaY = currentY - this.startY;
+            deltaLength = currentY - this.startY;
             this.startY = currentY;
-            if (targetEl.scrollTop == 0 && currentY < railContainerElRect.y) return;
-            if (targetEl.scrollTop + targetElRect.height >= targetEl.scrollHeight) {
+            if (targetAttributes.scrollStart == 0 && currentY < railContainerElRect.y) return;
+            if (
+                targetAttributes.scrollStart + targetAttributes.clientSize >=
+                targetAttributes.scrollSize
+            ) {
                 if (currentY >= railContainerElRect.y + railContainerElRect.height) {
                     return;
                 }
             }
             const height =
-                (deltaY / (railContainerEl.clientHeight - thumbEl.offsetHeight)) *
-                (targetEl.scrollHeight - targetEl.clientHeight);
-            targetEl.scrollTop = targetEl.scrollTop + height;
+                (deltaLength / (railContainerEl.clientHeight - thumbEl.offsetHeight)) *
+                (targetAttributes.scrollSize - targetAttributes.clientSize);
+            this.targetScrollTo(targetAttributes.scrollStart + height);
         }
     }
-    handleMouseUp(e) {
+    handleMouseUp() {
         if (this.isDestroyed) return;
         this.isDragging = false;
     }
-    handleScroll(e) {
+    handleScroll() {
         if (this.isDestroyed) return;
         this.computedProportion();
     }
     handleClick(e) {
+        if (this.isDestroyed) return;
         if (this.stopClickPropagation) {
             e.stopPropagation();
         }
-        const targetEl = this.targetEl;
+        const targetAttributes = this.getTargetAttributes();
         const thumbEl = this.thumbEl;
         const thumbElRect = thumbEl.getBoundingClientRect();
+        let isAdd = false;
         if (this.isX) {
-            if (e.x < thumbElRect.x) {
-                targetEl.scrollLeft = targetEl.scrollLeft - targetEl.clientWidth;
-            }
             if (e.x > thumbElRect.x + thumbElRect.width) {
-                targetEl.scrollLeft = targetEl.scrollLeft + targetEl.clientWidth;
+                isAdd = true;
             }
         } else {
-            if (e.y < thumbElRect.y) {
-                targetEl.scrollTop = targetEl.scrollTop - targetEl.clientHeight;
+            if (e.y > thumbElRect.y + thumbElRect.width) {
+                isAdd = true;
             }
-            if (e.y > thumbElRect.y + thumbElRect.height) {
-                targetEl.scrollTop = targetEl.scrollTop + targetEl.clientHeight;
-            }
+        }
+        if (isAdd) {
+            this.targetScrollTo(targetAttributes.scrollStart + targetAttributes.clientSize);
+        } else {
+            this.targetScrollTo(targetAttributes.scrollStart - targetAttributes.clientSize);
         }
     }
     handleMouseEnter() {
@@ -211,16 +313,27 @@ export class Rail extends BaseTools {
         this.isHover = false;
         this.computedProportion();
     }
-    handleTransitionStart() {
+    handleTransitionStart(e) {
+        const railEl = this.railEl;
+        if (!e || e.target !== railEl) return;
         this.isTransitioning = true;
         this.computedProportion();
     }
-    handleTransitionEnd() {
+    handleTransitionEnd(e) {
+        const railEl = this.railEl;
+        if (!e || e.target !== railEl) return;
         this.isTransitioning = false;
         this.computedProportion();
     }
+    handleTargetMouseEnter() {
+        this.isTargetHover = true;
+        this.computedProportion();
+    }
+    handleTargetMouseLeave() {
+        this.isTargetHover = false;
+        this.computedProportion();
+    }
     addEventListener() {
-        this.removeEventListener();
         const targetEl = this.targetEl;
         const railEl = this.railEl;
         const thumbEl = this.thumbEl;
@@ -253,11 +366,25 @@ export class Rail extends BaseTools {
         that.handleTransitionEnd_ = function (e) {
             that.handleTransitionEnd(e);
         };
+        that.handleTargetMouseEnter_ = function (e) {
+            that.handleTargetMouseEnter(e);
+        };
+        that.handleTargetMouseLeave_ = function (e) {
+            that.handleTargetMouseLeave(e);
+        };
         thumbEl.addEventListener('mousedown', that.handleMousedown_);
         document.addEventListener('mousemove', that.handleMouseMove_);
         document.addEventListener('mouseup', that.handleMouseUp_);
         railContainerEl.addEventListener('click', that.handleClick_);
-        targetEl.addEventListener('scroll', that.handleScroll_);
+        if (this.targetIsWidow) {
+            window.addEventListener('scroll', that.handleScroll_);
+            document.addEventListener('mouseenter', that.handleTargetMouseEnter_);
+            document.addEventListener('mouseleave', that.handleTargetMouseLeave_);
+        } else {
+            targetEl.addEventListener('scroll', that.handleScroll_);
+            targetEl.addEventListener('mouseenter', that.handleTargetMouseEnter_);
+            targetEl.addEventListener('mouseleave', that.handleTargetMouseLeave_);
+        }
         railEl.addEventListener('mouseenter', that.handleMouseEnter_);
         railEl.addEventListener('mouseleave', that.handleMouseLeave_);
         railEl.addEventListener('transitionstart', that.handleTransitionStart_);
@@ -265,22 +392,34 @@ export class Rail extends BaseTools {
     }
     removeEventListener() {
         const targetEl = this.targetEl;
+        const railEl = this.railEl;
         const thumbEl = this.thumbEl;
         const railContainerEl = this.railContainerEl;
         thumbEl.removeEventListener('mousedown', this.handleMousedown_);
         document.removeEventListener('mousemove', this.handleMouseMove_);
         document.removeEventListener('mouseup', this.handleMouseUp_);
         railContainerEl.removeEventListener('click', this.handleClick_);
-        targetEl.removeEventListener('scroll', this.handleScroll_);
-        targetEl.removeEventListener('mouseenter', this.handleMouseEnter_);
-        targetEl.removeEventListener('mouseleave', this.handleMouseLeave_);
+        if (this.targetIsWidow) {
+            window.removeEventListener('scroll', this.handleScroll_);
+            document.removeEventListener('mouseenter', this.handleTargetMouseEnter_);
+            document.removeEventListener('mouseleave', this.handleTargetMouseLeave_);
+        } else {
+            targetEl.removeEventListener('scroll', this.handleScroll_);
+            targetEl.removeEventListener('mouseenter', this.handleTargetMouseEnter_);
+            targetEl.removeEventListener('mouseleave', this.handleTargetMouseLeave_);
+        }
+        railEl.removeEventListener('mouseenter', this.handleMouseEnter_);
+        railEl.removeEventListener('mouseleave', this.handleMouseLeave_);
+        railEl.removeEventListener('transitionstart', this.handleTransitionStart_);
+        railEl.removeEventListener('transitionend', this.handleTransitionEnd_);
     }
     destroy() {
-        this.unmount();
+        if (this.isDestroyed) return;
+        super.unmount();
+        super.destroy();
         this.removeEventListener();
         this.railEl = undefined;
         this.railContainerEl = undefined;
         this.thumbEl = undefined;
-        this.isDestroyed = true;
     }
 }

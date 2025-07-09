@@ -14,6 +14,17 @@
                 margin: 0;
                 padding: 0;
             }
+            /* 隐藏滚动条 */
+            html,
+            body {
+                scrollbar-width: none; /* Firefox */
+            }
+            body::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Edge */
+            }
+            h2 {
+                color: #005ea7;
+            }
             .no-scrollbar {
                 -ms-overflow-style: none;
                 scrollbar-width: none;
@@ -22,9 +33,7 @@
                 display: none;
             }
             .dumogu-scrollbar-demo {
-                width: 100vw;
-                height: 100vh;
-                overflow: auto;
+                width: 100%;
             }
             .dumogu-scrollbar-demo > .container {
                 padding: 15px;
@@ -36,33 +45,59 @@
             .container > * {
                 margin: 0 0 15px 0;
             }
+            .ds h3 {
+                padding: 15px;
+            }
             .ds-1 {
-                width: 500px;
+                max-width: 500px;
+                width: 100%;
                 height: 300px;
                 overflow: auto;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+            }
+            .ds-1-rail {
+                max-width: 500px;
+                width: 100%;
+                padding: 5px;
+                box-sizing: border-box;
+                background-color: #dfdfdf;
+                border-radius: 5px;
+            }
+            .ds-2-rail {
+                max-width: 500px;
+                width: 100%;
+                padding: 5px;
+                box-sizing: border-box;
                 background-color: #dfdfdf;
                 border-radius: 5px;
             }
             .ds-2 {
-                width: 500px;
+                max-width: 500px;
+                width: 100%;
                 height: 300px;
                 overflow: auto;
                 background-color: #dfdfdf;
                 border-radius: 5px;
             }
-            .ds-3 {
-                width: 500px;
+            .ds-3-container {
+                max-width: 500px;
+                width: 100%;
+                padding: 10px;
                 height: 300px;
-                overflow: auto;
-                background-color: #dfdfdf;
-                border-radius: 5px;
+                box-sizing: border-box;
+                overflow: hidden;
+                position: relative;
+                border: 3px solid;
+                border-radius: 9px;
             }
-            .ds-4 {
-                width: 500px;
-                height: 300px;
+            .ds-3-container .ds-3 {
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
                 overflow: auto;
                 background-color: #dfdfdf;
-                border-radius: 5px;
+                border-radius: 9px;
                 border: 3px solid;
             }
             .defin-css .dumogu-scrollbar-target-rail.x {
@@ -72,9 +107,9 @@
                 box-sizing: border-box;
                 border-radius: 999px;
                 box-shadow: inset 1px 1px 2px #0000001c;
-                bottom: 6px;
+                bottom: 6px !important;
                 width: calc(100% - 12px);
-                left: 6px;
+                left: 6px !important;
             }
             .defin-css .dumogu-scrollbar-target-thumb.x {
                 border-radius: 999px;
@@ -83,83 +118,136 @@
             }
             .defin-css .dumogu-scrollbar-target-rail.y {
                 width: 8px;
-                right: -12px;
+                right: initial !important;
+                left: -14px !important;
             }
             .defin-css .dumogu-scrollbar-target-thumb.y {
                 border-radius: 999px;
-                background: #987;
-                background-image: linear-gradient(
-                    -131deg,
-                    rgb(231, 176, 43) 0%,
-                    rgb(193, 62, 81) 100%
-                );
+                background: #e14fad;
+                background-image: linear-gradient(to top, #e14fad 0%, #f9d423 100%);
+            }
+            .defin-css-1 .dumogu-scrollbar-target-thumb.x {
+                background: #43e97b;
+                background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 100%);
             }
         </style>
         <script>
             window.addEventListener('DOMContentLoaded', function () {
-                const { DumoguScrollbar } = window['dumogu-scrollbar'];
+                const { DumoguScrollbar, Rail } = window['dumogu-scrollbar'];
                 const dsInstanceList = [];
-                dsInstanceList.push(
-                    new DumoguScrollbar(document.querySelector('#dumogu-scrollbar-demo'), {
-                        keepShow: false,
-                        stopClickPropagation: true,
-                    }),
-                );
-                dsInstanceList.push(
-                    new DumoguScrollbar(document.querySelector('#ds-2'), {
-                        keepShow: true,
-                        stopClickPropagation: true,
-                    }),
-                );
-                dsInstanceList.push(
-                    new DumoguScrollbar(document.querySelector('#ds-3'), {
-                        keepShow: false,
-                        stopClickPropagation: true,
-                    }),
-                );
-                dsInstanceList.push(
-                    new DumoguScrollbar(document.querySelector('#ds-4'), {
-                        keepShow: true,
-                        stopClickPropagation: true,
-                    }),
-                );
+                const railInstanceList = [];
+                const dsInstance = new DumoguScrollbar({
+                    keepShow: false, // 始终保持显示
+                    stopClickPropagation: true, // 阻止点击事件冒泡
+                });
+                dsInstance.bind(); // 参数为空绑定window，表示为页面的滚动条
+                dsInstance.mount(); // 参数为空挂载到body上
+                dsInstanceList.push(dsInstance);
+                // branch
+                const dsInstance_1 = new DumoguScrollbar({
+                    keepShow: true,
+                    stopClickPropagation: true,
+                });
+                dsInstance_1.scrollbarEl.classList.add('defin-css');
+                dsInstance_1.bind(document.querySelector('#ds-1'));
+                dsInstance_1.mount();
+                dsInstanceList.push(dsInstance_1);
+                const railInstance_1 = new Rail({
+                    isX: true,
+                    keepShow: true,
+                    stopClickPropagation: true,
+                });
+                document.querySelector('#ds-1-rail').appendChild(railInstance_1.railEl);
+                railInstance_1.railEl.classList.add('defin-css-1');
+                railInstance_1.bind(document.querySelector('#ds-1'));
+                railInstanceList.push(railInstance_1);
+                const railInstance_2 = new Rail({
+                    isX: true,
+                    keepShow: false,
+                    stopClickPropagation: true,
+                });
+                document.querySelector('#ds-2-rail').appendChild(railInstance_2.railEl);
+                railInstance_2.bind(document.querySelector('#ds-1'));
+                railInstanceList.push(railInstance_2);
+                // branch
+                const dsInstance_2 = new DumoguScrollbar({
+                    keepShow: true,
+                    stopClickPropagation: true,
+                });
+                dsInstance_2.bind(document.querySelector('#ds-2'));
+                dsInstance_2.mount();
+                dsInstanceList.push(dsInstance_2);
+                // branch
+                const dsInstance_3 = new DumoguScrollbar({
+                    keepShow: false,
+                    stopClickPropagation: true,
+                });
+                dsInstance_3.bind(document.querySelector('#ds-3'));
+                dsInstance_3.mount(document.querySelector('#ds-3-container'));
+                dsInstanceList.push(dsInstance_3);
                 /** 每一帧更新滚动条位置 */
-                function update() {
+                function updateDsInstance() {
                     requestAnimationFrame(() => {
                         dsInstanceList.forEach((item) => {
                             item.update();
                         });
-                        update();
+                        railInstanceList.forEach((item) => {
+                            item.update();
+                        });
+                        updateDsInstance();
                     });
                 }
-                update();
-                dsInstanceList[3].scrollbar.scrollbarEl.classList.add('defin-css');
+                updateDsInstance();
             });
         </script>
     </head>
 
     <body>
-        <div id="dumogu-scrollbar-demo" class="dumogu-scrollbar-demo no-scrollbar">
+        <div class="dumogu-scrollbar-demo no-scrollbar">
             <div class="container">
                 <h1 class="title">dumogu-scrollbar demo</h1>
+                <div>
+                    滚动条默认挂载到body上（可自定义挂载位置），可为滚动条添加自定义样式，完全不影响滚动容器，不用在滚动容器中包装其他元素。
+                    因为是挂载到body上，所以需要手动设置位置（demo中有例子），如果觉得麻烦请将滚动容器包装一层，挂载到父元素上（demo中有例子）。
+                </div>
+                <div>
+                    注意，不要将自定义滚动条挂载到滚动元素中，因为绝对定位在滚动容器中是会随着滚动发生变化的，而且也会影响滚动容器，所以市面上的一些滚动库会将滚动容器包装一层或者很多层。
+                </div>
                 <h2 class="title">自定义滚动条样式</h2>
                 <div>
                     始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
                 </div>
-                <div id="ds-4" class="ds ds-4 no-scrollbar">
-                    <h3 style="width: 800px">测试</h3>
+                <div id="ds-1" class="ds ds-1 no-scrollbar">
+                    <h3>滚动容器</h3>
+                    <h3 style="width: 800px">
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                    </h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
+                    <h3 style="width: 800px">
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                    </h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
+                    <h3 style="width: 800px">
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                        始终显示滚动条，可以定义任意的css样式，完全不影响滚动容器，不会在滚动容器中添加任何多余的元素。
+                    </h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
                     <h3>测试</h3>
                 </div>
+                <div>你甚至可以只创建导轨，并将导轨放置到页面的任何位置</div>
+                <div id="ds-1-rail" class="ds-1-rail"></div>
+                <div>hover或者滚动容器hover的时候才显示</div>
+                <div id="ds-2-rail" class="ds-2-rail"></div>
                 <h2 class="title">与原生并不冲突</h2>
                 <div id="ds-2" class="ds ds-2">
+                    <h3>滚动容器</h3>
                     <h3 style="width: 800px">滚动条有最小长度限制，与原生滚动条一致。</h3>
                     <h3 style="height: 100000px">此元素高度100000px</h3>
                     <h3>测试</h3>
@@ -172,18 +260,21 @@
                     <h3>测试</h3>
                     <h3>测试</h3>
                 </div>
-                <h2 class="title">hover的时候显示滚动条</h2>
-                <div id="ds-3" class="ds ds-3 no-scrollbar">
-                    <h3 style="width: 800px">测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
-                    <h3>测试</h3>
+                <h2 class="title">挂载到指定元素上</h2>
+                <div id="ds-3-container" class="ds-3-container">
+                    <div id="ds-3" class="ds ds-3 no-scrollbar">
+                        <h3>滚动容器，hover的时候显示滚动条</h3>
+                        <h3 style="width: 800px">测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                        <h3>测试</h3>
+                    </div>
                 </div>
             </div>
         </div>

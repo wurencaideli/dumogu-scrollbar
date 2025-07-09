@@ -1,32 +1,43 @@
 .dumogu-scrollbar {
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
+    position: absolute;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
     overflow: hidden;
     pointer-events: none;
     z-index: 999;
+    &.mounted-to-body {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+    }
     > .dumogu-scrollbar-target {
         position: absolute;
         width: 0;
         height: 0;
+        > .dumogu-scrollbar-target-rail {
+            position: absolute;
+            &.x {
+                bottom: 0;
+                left: 0;
+            }
+            &.y {
+                right: 0;
+                top: 0;
+            }
+        }
     }
 }
 .dumogu-scrollbar-target-rail {
-    position: absolute;
     opacity: 0;
     transition: opacity 0.2s;
     pointer-events: initial;
     &.x {
-        bottom: 0;
-        left: 0;
         height: 8px;
         width: 100%;
     }
     &.y {
-        right: 0;
-        top: 0;
         height: 100%;
         width: 8px;
     }
@@ -46,15 +57,18 @@
         opacity: 1;
     }
     > .dumogu-scrollbar-target-rail-container {
+        // 此类名不建议自定义样式
         position: relative;
         width: 100%;
         height: 100%;
         > .dumogu-scrollbar-target-thumb {
             position: absolute;
-            background-color: #007fff;
+            background-color: #1d8fe1;
+            background-image: linear-gradient(-225deg, #22e1ff 0%, #1d8fe1 48%, #625eb1 100%);
             user-select: none;
             border-radius: 2px;
             box-sizing: border-box;
+            box-shadow: 1px 1px 3px #00000073;
             &.x {
                 height: 100%;
             }

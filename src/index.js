@@ -1,99 +1,136 @@
-import { removeElement, BaseTools } from './common';
+import { BaseTools, removeElement } from './common';
 import { Rail } from './rail';
-import { Scrollbar } from './scrollbar';
-
-/**
- * 毒蘑菇滚动条，自定义滚动条，添加到body上
- */
+export * from './rail';
 export class DumoguScrollbar extends BaseTools {
-    targetEl;
-    scrollbar;
+    targetEl; // 所绑定的滚动目标
+    mountContainerEl; // 被挂载到的元素
+    mountedToBody = true; // 是否挂载到了body上
+    targetIsWidow = true; // 绑定的滚动目标是否是window
+    scrollbarEl;
+    scrollbarTargetEl;
     railX;
     railY;
-    isHover = false;
-    handleMouseEnter_;
-    handleMouseLeave_;
-    constructor(targetEl, option = {}) {
+    constructor(option = {}) {
         super();
-        this.targetEl = targetEl;
-        this.scrollbar = new Scrollbar(targetEl);
-        this.railX = new Rail(targetEl, {
+        this.scrollbarEl = document.createElement('div');
+        this.scrollbarTargetEl = document.createElement('div');
+        this.scrollbarEl.classList.add('dumogu-scrollbar');
+        this.scrollbarTargetEl.classList.add('dumogu-scrollbar-target');
+        this.railX = new Rail({
             isX: true,
             keepShow: option.keepShow,
             stopClickPropagation: option.stopClickPropagation,
         });
-        this.railY = new Rail(targetEl, {
+        this.railY = new Rail({
             isX: false,
             keepShow: option.keepShow,
             stopClickPropagation: option.stopClickPropagation,
         });
-        const scrollbarEl = this.scrollbar.scrollbarEl;
-        const scrollbarTargetEl = this.scrollbar.scrollbarTargetEl;
-        scrollbarTargetEl.appendChild(this.railX.railEl);
-        scrollbarTargetEl.appendChild(this.railY.railEl);
-        scrollbarEl.appendChild(scrollbarTargetEl);
-        this.addEventListener();
-        this.mount();
-        this.update();
+        this.scrollbarTargetEl.appendChild(this.railX.railEl);
+        this.scrollbarTargetEl.appendChild(this.railY.railEl);
+        this.scrollbarEl.appendChild(this.scrollbarTargetEl);
     }
-    handleMouseEnter() {
-        this.isHover = true;
-        this.update();
-    }
-    handleMouseLeave() {
-        this.isHover = false;
-        this.update();
-    }
-    addEventListener() {
-        const targetEl = this.targetEl;
-        const that = this;
-        this.handleMouseEnter_ = function () {
-            that.handleMouseEnter();
-        };
-        this.handleMouseLeave_ = function () {
-            that.handleMouseLeave();
-        };
-        targetEl.addEventListener('mouseenter', this.handleMouseEnter_);
-        targetEl.addEventListener('mouseleave', this.handleMouseLeave_);
-    }
-    removeEventListener() {
-        this.targetEl.removeEventListener('mouseenter', this.handleMouseEnter);
-        this.targetEl.removeEventListener('mouseleave', this.handleMouseLeave);
-    }
-    update() {
+    /** 将滚动条与一个元素绑定 */
+    bind(targetEl) {
         if (this.isDestroyed) return;
-        const targetElRect = this.targetEl.getBoundingClientRect();
-        this.scrollbar.computedPosition({
-            targetElRect: targetElRect,
-        });
-        this.railX.computedProportion();
-        this.railY.computedProportion();
-        if (this.isHover) {
-            this.railX.railEl.classList.add('target-hover');
-            this.railY.railEl.classList.add('target-hover');
-        } else {
-            this.railY.railEl.classList.remove('target-hover');
-            this.railX.railEl.classList.remove('target-hover');
-        }
+        this.targetEl = targetEl;
+        this.targetIsWidow = !targetEl;
+        this.railX.bind(targetEl);
+        this.railY.bind(targetEl);
     }
-    mount() {
-        document.body.appendChild(this.scrollbar.scrollbarEl);
-        this.isMounted = true;
+    /** 挂载到一个元素上 */
+    mount(mountContainerEl) {
+        if (this.isDestroyed) return;
+        super.mount();
+        this.mountContainerEl = mountContainerEl;
+        if (!mountContainerEl) {
+            document.body.appendChild(this.scrollbarEl);
+            this.mountedToBody = true;
+        } else {
+            mountContainerEl.appendChild(this.scrollbarEl);
+            this.mountedToBody = false;
+        }
+        this.setupActionClass();
+        this.computedPosition();
     }
     unmount() {
-        removeElement(this.scrollbar.scrollbarEl);
-        this.isMounted = false;
+        if (this.isDestroyed) return;
+        super.unmount();
+        removeElement(this.scrollbarEl);
+    }
+    /** 添加类名 */
+    setupActionClass() {
+        if (this.isDestroyed) return;
+        const scrollbarEl = this.scrollbarEl;
+        if (this.mountedToBody) {
+            scrollbarEl.classList.add('mounted-to-body');
+        } else {
+            scrollbarEl.classList.remove('mounted-to-body');
+        }
+        if (this.targetIsWidow) {
+            scrollbarEl.classList.add('is-window');
+        } else {
+            scrollbarEl.classList.remove('is-window');
+        }
+    }
+    /** 更新 */
+    update() {
+        if (this.isDestroyed) return;
+        this.computedPosition();
+        if (!this.railX.isDragging) {
+            this.railX.update();
+        }
+        if (!this.railY.isDragging) {
+            this.railY.update();
+        }
+    }
+    /** 计算位置 */
+    computedPosition() {
+        if (this.isDestroyed) return;
+        const targetEl = this.targetEl;
+        const mountContainerEl = this.mountContainerEl;
+        const scrollbarEl = this.scrollbarEl;
+        const scrollbarTargetEl = this.scrollbarTargetEl;
+        if (this.targetIsWidow) {
+            scrollbarTargetEl.style.width = '100%';
+            scrollbarTargetEl.style.height = '100%';
+            return;
+        }
+        if (this.mountedToBody) {
+            const targetElRect = targetEl.getBoundingClientRect();
+            scrollbarTargetEl.style.width = targetElRect.width + 'px';
+            scrollbarTargetEl.style.height = targetElRect.height + 'px';
+            scrollbarTargetEl.style.top = targetElRect.y + 'px';
+            scrollbarTargetEl.style.left = targetElRect.x + 'px';
+            return;
+        }
+        const scrollbarElRect = scrollbarEl.getBoundingClientRect();
+        const targetElRect = targetEl.getBoundingClientRect();
+        const mountContainerElRect = mountContainerEl.getBoundingClientRect();
+        scrollbarTargetEl.style.width = targetElRect.width + 'px';
+        scrollbarTargetEl.style.height = targetElRect.height + 'px';
+        scrollbarTargetEl.style.top =
+            targetElRect.y -
+            mountContainerElRect.y -
+            (scrollbarElRect.y - mountContainerElRect.y) +
+            'px';
+        scrollbarTargetEl.style.left =
+            targetElRect.x -
+            mountContainerElRect.x -
+            (scrollbarElRect.x - mountContainerElRect.x) +
+            'px';
     }
     destroy() {
+        if (this.isDestroyed) return;
         this.unmount();
-        this.scrollbar.destroy();
+        super.destroy();
         this.railX.destroy();
         this.railY.destroy();
-        this.removeEventListener();
-        this.targetEl = undefined;
-        this.scrollbar = undefined;
         this.railX = undefined;
         this.railY = undefined;
-        this.isDestroyed = true;
+        this.targetEl = undefined;
+        this.mountContainerEl = undefined;
+        this.scrollbarEl = undefined;
+        this.scrollbarTargetEl = undefined;
     }
 }
