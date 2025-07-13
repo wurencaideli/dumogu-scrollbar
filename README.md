@@ -19,20 +19,30 @@ npm install dumogu-scrollbar
 ```javascript
 import {DumoguScrollbar} form 'dumogu-scrollbar';
 
-const el = document.getElementById('target');
-const dumoguScrollbar = new DumoguScrollbar(el,{
+/** Defines page-level scrollbars */
+const dsInstance = new DumoguScrollbar({
     keepShow:false,  // Whether to always display
     stopClickPropagation:false  // Cancel the bubble of the click event
 });
+dsInstance.bind();
+dsInstance.mount();
+
+/** Binding scrollable elements */
+const dsInstance_1 = new DumoguScrollbar({
+    keepShow: true,
+    stopClickPropagation: true,
+});
+dsInstance_1.bind(document.querySelector('#ds-2'));
+dsInstance_1.mount();
 
 /** The following are some methods in the examples */
 
 // Update the style
-dumoguScrollbar.update();
+dsInstance.update();
 // Mount
-dumoguScrollbar.mount()
+dsInstance.mount()
 // Unmount
-dumoguScrollbar.unmount()
+dsInstance.unmount()
 // Destroy
-dumoguScrollbar.destroy()
+dsInstance.destroy()
 ```
