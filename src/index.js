@@ -8,14 +8,62 @@ import {
 import { Rail } from './rail';
 export * from './rail';
 export class DumoguScrollbar extends BaseTools {
-    targetEl; // 所绑定的滚动目标
-    mountContainerEl; // 被挂载到的元素
-    mountedToBody = true; // 是否挂载到了body上
-    targetIsWidow = true; // 绑定的滚动目标是否是window
-    scrollbarEl;
-    scrollbarTargetEl;
-    railX;
-    railY;
+    #targetEl__; // 所绑定的滚动目标
+    #mountContainerEl__; // 被挂载到的元素
+    #mountedToBody__ = true; // 是否挂载到了body上
+    #targetIsWidow__ = true; // 绑定的滚动目标是否是window
+    #scrollbarEl__;
+    #scrollbarTargetEl__;
+    #railX__;
+    #railY__;
+    get targetEl() {
+        return this.#targetEl__;
+    }
+    set targetEl(value) {
+        this.#targetEl__ = value;
+    }
+    get mountContainerEl() {
+        return this.#mountContainerEl__;
+    }
+    set mountContainerEl(value) {
+        this.#mountContainerEl__ = value;
+    }
+    get mountedToBody() {
+        return this.#mountedToBody__;
+    }
+    set mountedToBody(value) {
+        this.#mountedToBody__ = value;
+    }
+    get targetIsWidow() {
+        return this.#targetIsWidow__;
+    }
+    set targetIsWidow(value) {
+        this.#targetIsWidow__ = value;
+    }
+    get scrollbarEl() {
+        return this.#scrollbarEl__;
+    }
+    set scrollbarEl(value) {
+        this.#scrollbarEl__ = value;
+    }
+    get scrollbarTargetEl() {
+        return this.#scrollbarTargetEl__;
+    }
+    set scrollbarTargetEl(value) {
+        this.#scrollbarTargetEl__ = value;
+    }
+    get railX() {
+        return this.#railX__;
+    }
+    set railX(value) {
+        this.#railX__ = value;
+    }
+    get railY() {
+        return this.#railY__;
+    }
+    set railY(value) {
+        this.#railY__ = value;
+    }
     constructor(option = {}) {
         super();
         const scrollbarEl = document.createElement('div');
@@ -35,30 +83,30 @@ export class DumoguScrollbar extends BaseTools {
         scrollbarTargetEl.appendChild(railX.railEl);
         scrollbarTargetEl.appendChild(railY.railEl);
         scrollbarEl.appendChild(scrollbarTargetEl);
-        this.scrollbarEl = scrollbarEl;
-        this.scrollbarTargetEl = scrollbarTargetEl;
-        this.railX = railX;
-        this.railY = railY;
+        this.#scrollbarEl__ = scrollbarEl;
+        this.#scrollbarTargetEl__ = scrollbarTargetEl;
+        this.#railX__ = railX;
+        this.#railY__ = railY;
     }
     /** 将滚动条与一个元素绑定 */
     bind(targetEl) {
         if (this.isDestroyed) return;
-        this.targetEl = targetEl;
-        this.targetIsWidow = !targetEl;
-        this.railX.bind(targetEl);
-        this.railY.bind(targetEl);
+        this.#targetEl__ = targetEl;
+        this.#targetIsWidow__ = !targetEl;
+        this.#railX__.bind(targetEl);
+        this.#railY__.bind(targetEl);
     }
     /** 挂载到一个元素上 */
     mount(mountContainerEl) {
         if (this.isDestroyed) return;
         super.mount();
-        this.mountContainerEl = mountContainerEl;
+        this.#mountContainerEl__ = mountContainerEl;
         if (!mountContainerEl) {
-            document.body.appendChild(this.scrollbarEl);
-            this.mountedToBody = true;
+            document.body.appendChild(this.#scrollbarEl__);
+            this.#mountedToBody__ = true;
         } else {
-            mountContainerEl.appendChild(this.scrollbarEl);
-            this.mountedToBody = false;
+            mountContainerEl.appendChild(this.#scrollbarEl__);
+            this.#mountedToBody__ = false;
         }
         this.#setupActionClass();
         this.#computedPosition();
@@ -66,18 +114,18 @@ export class DumoguScrollbar extends BaseTools {
     unmount() {
         if (this.isDestroyed) return;
         super.unmount();
-        removeElement(this.scrollbarEl);
+        removeElement(this.#scrollbarEl__);
     }
     /** 添加类名 */
     #setupActionClass() {
         if (this.isDestroyed) return;
-        const scrollbarEl = this.scrollbarEl;
-        if (this.mountedToBody) {
+        const scrollbarEl = this.#scrollbarEl__;
+        if (this.#mountedToBody__) {
             addElementClass(scrollbarEl, 'mounted-to-body');
         } else {
             removeElementClass(scrollbarEl, 'mounted-to-body');
         }
-        if (this.targetIsWidow) {
+        if (this.#targetIsWidow__) {
             addElementClass(scrollbarEl, 'is-window');
         } else {
             removeElementClass(scrollbarEl, 'is-window');
@@ -86,8 +134,8 @@ export class DumoguScrollbar extends BaseTools {
     /** 更新 */
     update() {
         if (this.isDestroyed) return;
-        const railX = this.railX;
-        const railY = this.railY;
+        const railX = this.#railX__;
+        const railY = this.#railY__;
         this.#computedPosition();
         if (!railX.isDragging) {
             railX.update();
@@ -99,16 +147,16 @@ export class DumoguScrollbar extends BaseTools {
     /** 计算位置 */
     #computedPosition() {
         if (this.isDestroyed) return;
-        const targetEl = this.targetEl;
-        const mountContainerEl = this.mountContainerEl;
-        const scrollbarEl = this.scrollbarEl;
-        const scrollbarTargetEl = this.scrollbarTargetEl;
-        if (this.targetIsWidow) {
+        const targetEl = this.#targetEl__;
+        const mountContainerEl = this.#mountContainerEl__;
+        const scrollbarEl = this.#scrollbarEl__;
+        const scrollbarTargetEl = this.#scrollbarTargetEl__;
+        if (this.#targetIsWidow__) {
             scrollbarTargetEl.style.width = '100%';
             scrollbarTargetEl.style.height = '100%';
             return;
         }
-        if (this.mountedToBody) {
+        if (this.#mountedToBody__) {
             const targetElRect = getElementRect(targetEl);
             scrollbarTargetEl.style.width = targetElRect.width + 'px';
             scrollbarTargetEl.style.height = targetElRect.height + 'px';
@@ -136,13 +184,13 @@ export class DumoguScrollbar extends BaseTools {
         if (this.isDestroyed) return;
         this.unmount();
         super.destroy();
-        this.railX.destroy();
-        this.railY.destroy();
-        this.railX = undefined;
-        this.railY = undefined;
-        this.targetEl = undefined;
-        this.mountContainerEl = undefined;
-        this.scrollbarEl = undefined;
-        this.scrollbarTargetEl = undefined;
+        this.#railX__.destroy();
+        this.#railY__.destroy();
+        this.#railX__ = undefined;
+        this.#railY__ = undefined;
+        this.#targetEl__ = undefined;
+        this.#mountContainerEl__ = undefined;
+        this.#scrollbarEl__ = undefined;
+        this.#scrollbarTargetEl__ = undefined;
     }
 }

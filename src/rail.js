@@ -3,21 +3,22 @@ import { BaseTools, addElementClass, removeElementClass, getElementRect } from '
  * 滚动条导轨，可自行创建使用
  */
 export class Rail extends BaseTools {
-    targetEl;
-    railEl;
-    railContainerEl;
-    thumbEl;
-    targetIsWidow = false;
+    #targetEl__;
+    #railEl__;
+    #railContainerEl__;
+    #thumbEl__;
+    #targetIsWidow__ = false;
     #isX__ = true;
     #keepShow__ = false;
-    stopClickPropagation = false;
-    isTransitioning = false;
+    #stopClickPropagation__ = false;
     #isDragging__ = false;
+    #isDragging_1__ = false; // 用作防止点击事件冲突的特殊属性
     #isHover__ = false;
     #isTargetHover__ = false;
     #proportion__ = 0;
-    startX = 0;
-    startY = 0;
+    #startX__ = 0;
+    #startY__ = 0;
+    #scrollProportion__;
     #handleMousedown_;
     #handleMouseMove_;
     #handleMouseUp_;
@@ -40,20 +41,49 @@ export class Rail extends BaseTools {
         addElementClass(railEl, 'hidden');
         railEl.appendChild(railContainerEl);
         railContainerEl.appendChild(thumbEl);
-        this.railEl = railEl;
-        this.railContainerEl = railContainerEl;
-        this.thumbEl = thumbEl;
-        this.stopClickPropagation = option.stopClickPropagation;
-        this.isX = option.isX;
-        this.keepShow = option.keepShow;
+        this.#railEl__ = railEl;
+        this.#railContainerEl__ = railContainerEl;
+        this.#thumbEl__ = thumbEl;
+        this.#stopClickPropagation__ = option.stopClickPropagation;
+        this.#isX__ = option.isX;
+        this.#keepShow__ = option.keepShow;
+        this.#setupActionClass();
     }
-    /** 将滚动条与一个元素绑定 */
-    bind(targetEl) {
-        if (this.isDestroyed) return;
-        this.targetEl = targetEl;
-        this.targetIsWidow = !targetEl;
-        this.#removeEventListener();
-        this.#addEventListener();
+    set targetEl(value) {
+        this.#targetEl__ = value;
+    }
+    get targetEl() {
+        return this.#targetEl__;
+    }
+    set railEl(value) {
+        this.#railEl__ = value;
+    }
+    get railEl() {
+        return this.#railEl__;
+    }
+    set railContainerEl(value) {
+        this.#railContainerEl__ = value;
+    }
+    get railContainerEl() {
+        return this.#railContainerEl__;
+    }
+    set thumbEl(value) {
+        this.#thumbEl__ = value;
+    }
+    get thumbEl() {
+        return this.#thumbEl__;
+    }
+    set targetIsWidow(value) {
+        this.#targetIsWidow__ = value;
+    }
+    get targetIsWidow() {
+        return this.#targetIsWidow__;
+    }
+    set stopClickPropagation(value) {
+        this.#stopClickPropagation__ = value;
+    }
+    get stopClickPropagation() {
+        return this.#stopClickPropagation__;
     }
     set isX(value) {
         this.#isX__ = value;
@@ -98,10 +128,18 @@ export class Rail extends BaseTools {
     get proportion() {
         return this.#proportion__;
     }
+    /** 将滚动条与一个元素绑定 */
+    bind(targetEl) {
+        if (this.isDestroyed) return;
+        this.#targetEl__ = targetEl;
+        this.#targetIsWidow__ = !targetEl;
+        this.#removeEventListener();
+        this.#addEventListener();
+    }
     #setupHidden() {
         if (this.isDestroyed) return;
-        const railEl = this.railEl;
-        if (this.proportion >= 1) {
+        const railEl = this.#railEl__;
+        if (this.#proportion__ >= 1) {
             addElementClass(railEl, 'hidden');
         } else {
             removeElementClass(railEl, 'hidden');
@@ -109,30 +147,30 @@ export class Rail extends BaseTools {
     }
     #setupActionClass() {
         if (this.isDestroyed) return;
-        const railEl = this.railEl;
-        const railContainerEl = this.railContainerEl;
-        const thumbEl = this.thumbEl;
-        if (this.keepShow) {
+        const railEl = this.#railEl__;
+        const railContainerEl = this.#railContainerEl__;
+        const thumbEl = this.#thumbEl__;
+        if (this.#keepShow__) {
             addElementClass(railEl, 'keep-show');
         } else {
             removeElementClass(railEl, 'keep-show');
         }
-        if (this.isDragging) {
+        if (this.#isDragging__) {
             addElementClass(railEl, 'dragging');
         } else {
             removeElementClass(railEl, 'dragging');
         }
-        if (this.isHover) {
+        if (this.#isHover__) {
             addElementClass(railEl, 'hover');
         } else {
             removeElementClass(railEl, 'hover');
         }
-        if (this.isTargetHover) {
+        if (this.#isTargetHover__) {
             addElementClass(railEl, 'target-hover');
         } else {
             removeElementClass(railEl, 'target-hover');
         }
-        if (this.isX) {
+        if (this.#isX__) {
             removeElementClass(railEl, 'y');
             removeElementClass(railContainerEl, 'y');
             removeElementClass(thumbEl, 'y');
@@ -150,12 +188,12 @@ export class Rail extends BaseTools {
     }
     /** 获取目标元素的属性 */
     #getTargetAttributes() {
-        const targetEl = this.targetEl;
-        const targetIsWidow = this.targetIsWidow;
+        const targetEl = this.#targetEl__;
+        const targetIsWidow = this.#targetIsWidow__;
         let clientSize = 0;
         let scrollSize = 0;
         let scrollStart = 0;
-        if (this.isX) {
+        if (this.#isX__) {
             clientSize = targetIsWidow ? window.innerWidth : targetEl.clientWidth;
             scrollSize = targetIsWidow
                 ? document.documentElement.scrollWidth
@@ -177,9 +215,9 @@ export class Rail extends BaseTools {
     /** 设置目标元素滚动位置 */
     #targetScrollTo(start) {
         if (this.isDestroyed) return;
-        const targetEl = this.targetEl;
-        const targetIsWidow = this.targetIsWidow;
-        if (this.isX) {
+        const targetEl = this.#targetEl__;
+        const targetIsWidow = this.#targetIsWidow__;
+        if (this.#isX__) {
             if (targetIsWidow) {
                 window.scrollTo(start, window.scrollY);
             } else {
@@ -207,22 +245,22 @@ export class Rail extends BaseTools {
         scrollProportion =
             targetAttributes.scrollStart /
             (targetAttributes.scrollSize - targetAttributes.clientSize);
-        this.scrollProportion = Math.min(scrollProportion, 1);
+        this.#scrollProportion__ = Math.min(scrollProportion, 1);
         this.proportion = Math.min(proportion, 1);
     }
     /** 设置滚动条显示的位置 */
     #setupPosition() {
         if (this.isDestroyed) return;
-        const railContainerEl = this.railContainerEl;
-        const thumbEl = this.thumbEl;
-        const proportion = this.proportion;
-        const scrollProportion = this.scrollProportion;
-        const railClientSize = this.isX
+        const railContainerEl = this.#railContainerEl__;
+        const thumbEl = this.#thumbEl__;
+        const proportion = this.#proportion__;
+        const scrollProportion = this.#scrollProportion__;
+        const railClientSize = this.#isX__
             ? railContainerEl.clientWidth
             : railContainerEl.clientHeight;
         const size = Math.max(railClientSize * proportion, 30); // 设置最小size
         const start = (((railClientSize - size) * scrollProportion) / railClientSize) * 100;
-        if (this.isX) {
+        if (this.#isX__) {
             thumbEl.style.width = size + 'px';
             thumbEl.style.left = start + '%';
         } else {
@@ -233,56 +271,46 @@ export class Rail extends BaseTools {
     #handleMousedown(e) {
         if (this.isDestroyed) return;
         this.isDragging = true;
-        this.startX = e.x;
-        this.startY = e.y;
+        this.#isDragging_1__ = true;
+        const thumbEl = this.#thumbEl__;
+        const thumbElRect = getElementRect(thumbEl);
+        // 记录点击时候的占比
+        if (this.#isX__) {
+            this.#startX__ = (e.x - thumbElRect.x) / thumbElRect.width;
+        } else {
+            this.#startY__ = (e.y - thumbElRect.y) / thumbElRect.height;
+        }
     }
     #handleMouseMove(e) {
         if (this.isDestroyed) return;
-        if (!this.isDragging) return;
+        if (!this.#isDragging__) return;
         const targetAttributes = this.#getTargetAttributes();
-        const railContainerEl = this.railContainerEl;
+        const railContainerEl = this.#railContainerEl__;
+        const thumbEl = this.#thumbEl__;
         const railContainerElRect = getElementRect(railContainerEl);
-        const thumbEl = this.thumbEl;
-        let deltaLength = 0;
+        const thumbElRect = getElementRect(thumbEl);
         const currentX = e.x;
         const currentY = e.y;
-        if (this.isX) {
-            deltaLength = currentX - this.startX;
-            this.startX = currentX;
-            if (targetAttributes.scrollStart == 0 && currentX < railContainerElRect.x) return;
-            if (
-                targetAttributes.scrollStart + targetAttributes.clientSize >=
-                targetAttributes.scrollSize
-            ) {
-                if (currentX >= railContainerElRect.x + railContainerElRect.width) {
-                    return;
-                }
-            }
-            const width =
-                (deltaLength / (railContainerEl.clientWidth - thumbEl.offsetWidth)) *
-                (targetAttributes.scrollSize - targetAttributes.clientSize);
-            this.#targetScrollTo(targetAttributes.scrollStart + width);
+        let scrollSize;
+        /** 使用点击时候的占比计算鼠标位置滚动条的占比 */
+        if (this.#isX__) {
+            scrollSize =
+                (currentX - railContainerElRect.x - thumbElRect.width * this.#startX__) /
+                (railContainerElRect.width - thumbElRect.width);
         } else {
-            deltaLength = currentY - this.startY;
-            this.startY = currentY;
-            if (targetAttributes.scrollStart == 0 && currentY < railContainerElRect.y) return;
-            if (
-                targetAttributes.scrollStart + targetAttributes.clientSize >=
-                targetAttributes.scrollSize
-            ) {
-                if (currentY >= railContainerElRect.y + railContainerElRect.height) {
-                    return;
-                }
-            }
-            const height =
-                (deltaLength / (railContainerEl.clientHeight - thumbEl.offsetHeight)) *
-                (targetAttributes.scrollSize - targetAttributes.clientSize);
-            this.#targetScrollTo(targetAttributes.scrollStart + height);
+            scrollSize =
+                (currentY - railContainerElRect.y - thumbElRect.height * this.#startY__) /
+                (railContainerElRect.height - thumbElRect.height);
         }
+        scrollSize = scrollSize * (targetAttributes.scrollSize - targetAttributes.clientSize);
+        this.#targetScrollTo(scrollSize);
     }
     #handleMouseUp() {
         if (this.isDestroyed) return;
         this.isDragging = false;
+        setTimeout(() => {
+            this.#isDragging_1__ = false;
+        });
     }
     #handleScroll() {
         if (this.isDestroyed) return;
@@ -290,22 +318,30 @@ export class Rail extends BaseTools {
     }
     #handleClick(e) {
         if (this.isDestroyed) return;
-        if (this.stopClickPropagation) {
+        if (this.#isDragging_1__) return;
+        if (this.#stopClickPropagation__) {
             e.stopPropagation();
         }
         const targetAttributes = this.#getTargetAttributes();
-        const thumbEl = this.thumbEl;
+        const thumbEl = this.#thumbEl__;
         const thumbElRect = getElementRect(thumbEl);
-        let isAdd = false;
-        if (this.isX) {
+        let isAdd = undefined;
+        if (this.#isX__) {
             if (e.x > thumbElRect.x + thumbElRect.width) {
                 isAdd = true;
             }
+            if (e.x < thumbElRect.x) {
+                isAdd = false;
+            }
         } else {
-            if (e.y > thumbElRect.y + thumbElRect.width) {
+            if (e.y > thumbElRect.y + thumbElRect.height) {
                 isAdd = true;
             }
+            if (e.y < thumbElRect.y) {
+                isAdd = false;
+            }
         }
+        if (isAdd === undefined) return;
         if (isAdd) {
             this.#targetScrollTo(targetAttributes.scrollStart + targetAttributes.clientSize);
         } else {
@@ -321,15 +357,13 @@ export class Rail extends BaseTools {
         this.#computedProportion();
     }
     #handleTransitionStart(e) {
-        const railEl = this.railEl;
+        const railEl = this.#railEl__;
         if (!e || e.target !== railEl || e.propertyName !== 'opacity') return;
-        this.isTransitioning = true;
         this.#computedProportion();
     }
     #handleTransitionEnd(e) {
-        const railEl = this.railEl;
+        const railEl = this.#railEl__;
         if (!e || e.target !== railEl || e.propertyName !== 'opacity') return;
-        this.isTransitioning = false;
         this.#computedProportion();
     }
     #handleTargetMouseEnter() {
@@ -341,10 +375,10 @@ export class Rail extends BaseTools {
         this.#computedProportion();
     }
     #addEventListener() {
-        const targetEl = this.targetEl;
-        const railEl = this.railEl;
-        const thumbEl = this.thumbEl;
-        const railContainerEl = this.railContainerEl;
+        const targetEl = this.#targetEl__;
+        const railEl = this.#railEl__;
+        const thumbEl = this.#thumbEl__;
+        const railContainerEl = this.#railContainerEl__;
         const that = this;
         that.#handleMousedown_ = function (e) {
             that.#handleMousedown(e);
@@ -384,7 +418,7 @@ export class Rail extends BaseTools {
         document[fnName]('mousemove', that.#handleMouseMove_);
         document[fnName]('mouseup', that.#handleMouseUp_);
         railContainerEl[fnName]('click', that.#handleClick_);
-        if (this.targetIsWidow) {
+        if (this.#targetIsWidow__) {
             window[fnName]('scroll', that.#handleScroll_);
             document[fnName]('mouseenter', that.#handleTargetMouseEnter_);
             document[fnName]('mouseleave', that.#handleTargetMouseLeave_);
@@ -399,16 +433,16 @@ export class Rail extends BaseTools {
         railEl[fnName]('transitionend', that.#handleTransitionEnd_);
     }
     #removeEventListener() {
-        const targetEl = this.targetEl;
-        const railEl = this.railEl;
-        const thumbEl = this.thumbEl;
-        const railContainerEl = this.railContainerEl;
+        const targetEl = this.#targetEl__;
+        const railEl = this.#railEl__;
+        const thumbEl = this.#thumbEl__;
+        const railContainerEl = this.#railContainerEl__;
         const fnName = 'removeEventListener';
         thumbEl[fnName]('mousedown', this.#handleMousedown_);
         document[fnName]('mousemove', this.#handleMouseMove_);
         document[fnName]('mouseup', this.#handleMouseUp_);
         railContainerEl[fnName]('click', this.#handleClick_);
-        if (this.targetIsWidow) {
+        if (this.#targetIsWidow__) {
             window[fnName]('scroll', this.#handleScroll_);
             document[fnName]('mouseenter', this.#handleTargetMouseEnter_);
             document[fnName]('mouseleave', this.#handleTargetMouseLeave_);
@@ -427,9 +461,9 @@ export class Rail extends BaseTools {
         super.unmount();
         super.destroy();
         this.#removeEventListener();
-        this.railEl = undefined;
-        this.railContainerEl = undefined;
-        this.thumbEl = undefined;
+        this.#railEl__ = undefined;
+        this.#railContainerEl__ = undefined;
+        this.#thumbEl__ = undefined;
         this.#handleMousedown_ = undefined;
         this.#handleMouseMove_ = undefined;
         this.#handleMouseUp_ = undefined;
