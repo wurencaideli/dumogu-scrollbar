@@ -1,5 +1,5 @@
 /*!
- * dumogu-scrollbar v0.0.7
+ * dumogu-scrollbar v0.0.8
  * Copyright 2025 wuzhanggui https://github.com/wurencaideli
  * Licensed under MIT
  */
